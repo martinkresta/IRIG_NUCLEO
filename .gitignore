@@ -1,0 +1,11 @@
+# object files/ etc
+Debug/
+.settings/*.*
+*.d
+*.o
+*.su
+!*.bin
+!*.hex
+*.elf
+*.map
+*.bak
