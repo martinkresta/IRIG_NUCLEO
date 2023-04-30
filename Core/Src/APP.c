@@ -86,6 +86,13 @@ void APP_Start(void)
 {
 
   // SET RTC time
+  sDateTime now;
+  now.Hour = 21;
+  now.Minute = 38;
+  now.Second = 0;
+
+  RTC_SetTime(now);
+
 
 	while (1)   // endless loop
 	{

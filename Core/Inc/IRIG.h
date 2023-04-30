@@ -9,6 +9,18 @@
 #define INC_IRIG_H_
 
 #include "main.h"
+#include "stdbool.h"
+
+typedef struct
+{
+  bool state;
+  uint16_t minOnTime;
+  uint16_t maxOnTime;
+  uint16_t minOffTime;
+  uint16_t stateTimer;
+  uint32_t pin;
+  GPIO_TypeDef* port;
+}sOutputControl;
 
 
 void IRIG_Init(void);
