@@ -27,4 +27,10 @@ void IRIG_Init(void);
 
 void IRIG_Update_1s(void);
 
+void IRIG_SetupAutoIrrig(uint16_t hour1, uint16_t hour2, uint16_t duration);
+
+void IRIG_SetAutoMode(void);
+
+void IRIG_IrrigateNow(uint16_t duration);
+
 #endif /* INC_IRIG_H_ */

@@ -15,11 +15,15 @@ sOutputControl mPumpACtrl;
 sOutputControl mPumpBCtrl;
 sOutputControl mIrigValveCtrl;
 
+bool mAutoIrrigation;
+
 // irigation settings
 
 uint16_t mIrigTime_s;
 uint16_t mIrigHour1;
 uint16_t mIrigHour2;
+
+uint16_t mIrigDuration_s;
 
 
 void StartOuptut(sOutputControl* out);
@@ -45,18 +49,19 @@ void IRIG_Init(void)
   mPumpBCtrl.stateTimer = 60000;
 
   mIrigValveCtrl.state = false;
-  mIrigValveCtrl.minOffTime = 10*60;  // 10 minutes
-  mIrigValveCtrl.minOnTime = 15;
-  mIrigValveCtrl.maxOnTime = 180*60;  // 3 hours
+  mIrigValveCtrl.minOffTime = 1;  // 10 seconds
+  mIrigValveCtrl.minOnTime = 1;
+  mIrigValveCtrl.maxOnTime = 4* 60 *60;  // 4 hours
   mIrigValveCtrl.pin = REL3_Pin;
   mIrigValveCtrl.port = REL3_GPIO_Port;
   mIrigValveCtrl.stateTimer = 60000;
 
 
-  mIrigTime_s = 60*60;  // 1 hour
+  mIrigTime_s = 2*60*60;  // 2 hour
   mIrigHour1 = 7;       // morning 7:00
   mIrigHour2 = 19;      // evening 7:00  // hint: to disable one irrigation period, set the hour to more than 24 ;-)
 
+  mAutoIrrigation = true;
 }
 
 
@@ -94,21 +99,25 @@ void IRIG_Update_1s(void)
 
   // automatic irrigation
 
-
-  if (now.Hour == mIrigHour1 || now.Hour == mIrigHour2)
+  if(mAutoIrrigation == true)
   {
-    if(now.Minute == 00 && now.Second == 0)
-    {
-      StartOuptut(&mIrigValveCtrl);
-    }
+    if (now.Hour == mIrigHour1 || now.Hour == mIrigHour2)
+      {
+        if(now.Minute == 00 && now.Second == 0)
+        {
+          mIrigDuration_s = mIrigTime_s;
+          StartOuptut(&mIrigValveCtrl);
+        }
+      }
   }
 
-  if(mIrigValveCtrl.state == true && (mIrigValveCtrl.stateTimer > mIrigTime_s))
+
+  // stoping of irrigation (both manual and auto triggered)
+
+  if(mIrigValveCtrl.state == true && (mIrigValveCtrl.stateTimer > mIrigDuration_s))
   {
     StopOuptut(&mIrigValveCtrl);
   }
-
-
 
 
   // apply output time limitations
@@ -124,6 +133,28 @@ void IRIG_Update_1s(void)
 
 
 }
+
+
+void IRIG_SetupAutoIrrig(uint16_t hour1, uint16_t hour2, uint16_t duration)
+{
+  mIrigTime_s = 60*duration;
+  mIrigHour1 = hour1;
+  mIrigHour2 = hour2;
+}
+
+void IRIG_SetAutoMode(void)
+{
+  mAutoIrrigation = true;
+}
+
+void IRIG_IrrigateNow(uint16_t duration)
+{
+
+  mAutoIrrigation = false;
+  mIrigDuration_s = duration * 60;
+  StartOuptut(&mIrigValveCtrl);
+}
+
 
 
 void StartOuptut(sOutputControl* out)

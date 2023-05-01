@@ -16,6 +16,7 @@
 #include "di.h"
 #include "IRIG.h"
 #include "SONAR.h"
+#include "RADIO.h"
 
 
 
@@ -32,6 +33,8 @@ void APP_Init(void)
 
 	DI_Init();
 	IRIG_Init();
+	RADIO_Init(&hlpuart1);
+	SONAR_Init();
 
 
 

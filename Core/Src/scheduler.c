@@ -11,6 +11,7 @@
 #include "IRIG.h"
 #include "SONAR.h"
 #include "di.h"
+#include "RADIO.h"
 
 
 
@@ -255,4 +256,6 @@ static void Timer_Task_1s(void)
 {	
 	APP_Update_1s();
 	IRIG_Update_1s();
+	RADIO_Update_1s();
+	SONAR_Measure();
 }
