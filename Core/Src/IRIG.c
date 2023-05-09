@@ -9,6 +9,7 @@
 #include "stdbool.h"
 #include "di.h"
 #include "RTC.h"
+#include "UI.h"
 
 
 sOutputControl mPumpACtrl;
@@ -75,9 +76,9 @@ void IRIG_Update_1s(void)
 
   // read the level bi-state sensors
 
-  tankFull = DI_Get(IN1_LEVEL1_TANKFULL);
-  tankEmpty = DI_Get(IN2_LEVEL2_TANKEMPTY);
-  wellAEmpty = DI_Get(IN3_LEVEL3_WELLAEMPTY);
+  tankFull = DI_Get(IN1_LEVEL1_TANKFULL); // water level above sensor
+  tankEmpty = !DI_Get(IN2_LEVEL2_TANKEMPTY);  // water level below sensor
+  wellAEmpty = !DI_Get(IN3_LEVEL3_WELLAEMPTY);  // water level below sensor
 
 
   // automatic refilling of irrigation tank from well (gray water savage)
@@ -88,12 +89,14 @@ void IRIG_Update_1s(void)
     if(now.Minute == 15)
     {
       StartOuptut(&mPumpACtrl);
+      UI_LED_R_SetMode(eUI_BLINKING_FAST);
     }
 
   }
   else
   {
     StopOuptut(&mPumpACtrl);
+    UI_LED_R_SetMode(eUI_OFF);
   }
 
 
@@ -107,6 +110,7 @@ void IRIG_Update_1s(void)
         {
           mIrigDuration_s = mIrigTime_s;
           StartOuptut(&mIrigValveCtrl);
+          UI_LED_G_SetMode(eUI_ON);
         }
       }
   }
@@ -117,6 +121,7 @@ void IRIG_Update_1s(void)
   if(mIrigValveCtrl.state == true && (mIrigValveCtrl.stateTimer > mIrigDuration_s))
   {
     StopOuptut(&mIrigValveCtrl);
+    UI_LED_G_SetMode(eUI_FLASH);
   }
 
 
@@ -127,9 +132,17 @@ void IRIG_Update_1s(void)
   if(mIrigValveCtrl.stateTimer < 60000) mIrigValveCtrl.stateTimer++;
 
   // check max ON time of all inputs
-  if(mPumpACtrl.state == true && (mPumpACtrl.stateTimer > mPumpACtrl.maxOnTime)) StopOuptut(&mPumpACtrl);
+  if(mPumpACtrl.state == true && (mPumpACtrl.stateTimer > mPumpACtrl.maxOnTime))
+  {
+    StopOuptut(&mPumpACtrl);
+    UI_LED_R_SetMode(eUI_OFF);
+  }
   if(mPumpBCtrl.state == true && (mPumpBCtrl.stateTimer > mPumpBCtrl.maxOnTime)) StopOuptut(&mPumpBCtrl);
-  if(mIrigValveCtrl.state == true && (mIrigValveCtrl.stateTimer > mIrigValveCtrl.maxOnTime)) StopOuptut(&mIrigValveCtrl);
+  if(mIrigValveCtrl.state == true && (mIrigValveCtrl.stateTimer > mIrigValveCtrl.maxOnTime))
+  {
+    UI_LED_G_SetMode(eUI_FLASH);
+    StopOuptut(&mIrigValveCtrl);
+  }
 
 
 }
@@ -153,6 +166,7 @@ void IRIG_IrrigateNow(uint16_t duration)
   mAutoIrrigation = false;
   mIrigDuration_s = duration * 60;
   StartOuptut(&mIrigValveCtrl);
+  UI_LED_G_SetMode(eUI_ON);
 }
 
 

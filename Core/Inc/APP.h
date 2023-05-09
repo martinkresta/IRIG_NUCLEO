@@ -12,7 +12,7 @@
 #include "main.h"
 #include "di.h"
 
-
+#define LIMITED_UI_LRG
 
 // CAN node ID
 #define THIS_NODE				NODEID_TECHM

@@ -434,6 +434,9 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(RADIO_SET_GPIO_Port, RADIO_SET_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, LED_R_Pin|LED_G_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
@@ -441,6 +444,13 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, REL1_Pin|REL2_Pin|REL3_Pin|REL4_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin : RADIO_SET_Pin */
+  GPIO_InitStruct.Pin = RADIO_SET_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_OD;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(RADIO_SET_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : VCP_TX_Pin VCP_RX_Pin */
   GPIO_InitStruct.Pin = VCP_TX_Pin|VCP_RX_Pin;

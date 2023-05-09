@@ -118,11 +118,11 @@ void Scheduler_Check_Flag(void)
 		Timer_1ms.flag = eFLAG_NOT_YET;
 	}
 	
-	if(Timer_5ms.flag)
+/*	if(Timer_5ms.flag)
 	{
 		Timer_Task_5ms();
 		Timer_5ms.flag = eFLAG_NOT_YET;
-	}
+	}*/
 	
 	if(Timer_10ms.flag)
 	{
@@ -130,7 +130,7 @@ void Scheduler_Check_Flag(void)
 		Timer_10ms.flag = eFLAG_NOT_YET;
 	}
 	
-	if(Timer_50ms.flag)
+/*	if(Timer_50ms.flag)
 	{
 		Timer_Task_50ms();
 		Timer_50ms.flag = eFLAG_NOT_YET;
@@ -152,7 +152,7 @@ void Scheduler_Check_Flag(void)
 	{
 		Timer_Task_500ms();
 		Timer_500ms.flag = eFLAG_NOT_YET;
-	}
+	}*/
 	
 	if(Timer_1s.flag)
 	{
@@ -180,10 +180,10 @@ static void Timer_Task_1ms(void)
 	* @retval
 ***********************************************************************
 */
-static void Timer_Task_5ms(void)
+/*static void Timer_Task_5ms(void)
 {	
 
-}
+}*/
 
 /**
 **********************************************************************	
@@ -204,10 +204,10 @@ static void Timer_Task_10ms(void)
 	* @retval
 ***********************************************************************
 */
-static void Timer_Task_50ms(void)
+/*static void Timer_Task_50ms(void)
 {
 	//LC_Update_50ms();
-}
+}*/
 
 /**
 **********************************************************************	
@@ -216,10 +216,10 @@ static void Timer_Task_50ms(void)
 	* @retval
 ***********************************************************************
 */
-static void Timer_Task_100ms(void)
+/*static void Timer_Task_100ms(void)
 {
 
-}
+}*/
 
 /**
 **********************************************************************	
@@ -228,9 +228,9 @@ static void Timer_Task_100ms(void)
 	* @retval
 ***********************************************************************
 */
-static void Timer_Task_250ms(void)
+/*static void Timer_Task_250ms(void)
 {
-}
+}*/
 	
 /**
 **********************************************************************	
@@ -239,11 +239,11 @@ static void Timer_Task_250ms(void)
 	* @retval
 ***********************************************************************
 */
-static void Timer_Task_500ms(void)
+/*static void Timer_Task_500ms(void)
 {
 	//HAL_GPIO_TogglePin(LED_B_GPIO_Port,LED_B_Pin);
 
-}
+}*/
 
 /**
 **********************************************************************	

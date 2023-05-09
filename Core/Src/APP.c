@@ -89,12 +89,15 @@ void APP_Start(void)
 {
 
   // SET RTC time
-  sDateTime now;
-  now.Hour = 21;
-  now.Minute = 38;
-  now.Second = 0;
+ // sDateTime now;
+  //now.Hour = 21;
+ // now.Minute = 38;
+ // now.Second = 0;
 
-  RTC_SetTime(now);
+ // RTC_SetTime(now);
+
+  UI_LED_G_SetMode(eUI_FLASH);
+  UI_LED_R_SetMode(eUI_OFF);
 
 
 	while (1)   // endless loop
@@ -133,6 +136,7 @@ void APP_DiInputChanged(uint8_t inputId, eDI state)
     case IN3_LEVEL3_WELLAEMPTY:
       break;
     case IN4_BTN1:
+
       break;
     case IN5_BTN2:
       break;
