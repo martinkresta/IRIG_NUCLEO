@@ -136,7 +136,10 @@ void APP_DiInputChanged(uint8_t inputId, eDI state)
     case IN3_LEVEL3_WELLAEMPTY:
       break;
     case IN4_BTN1:
-
+      if(state == eDI_HI)
+      {
+        IRIG_ToggleIrrigiation();
+      }
       break;
     case IN5_BTN2:
       break;
@@ -148,8 +151,12 @@ void APP_GestureDetected(uint8_t action)
   switch(action)
   {
     case GEST_IRIG_DUAL:
+      // flush the tank
+      IRIG_FlushTank();
       break;
     case GEST_IRIG_TRIPLE:
+      // fill the tank
+      IRIG_FillTank();
       break;
   }
 }

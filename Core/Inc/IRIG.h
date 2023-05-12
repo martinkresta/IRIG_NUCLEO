@@ -33,4 +33,10 @@ void IRIG_SetAutoMode(void);
 
 void IRIG_IrrigateNow(uint16_t duration);
 
+void IRIG_ToggleIrrigiation(void);
+
+void IRIG_FlushTank(void);
+
+void IRIG_FillTank(void);
+
 #endif /* INC_IRIG_H_ */

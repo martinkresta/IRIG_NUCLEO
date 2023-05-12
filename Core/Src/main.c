@@ -104,7 +104,7 @@ int main(void)
   MX_LPUART1_UART_Init();
   MX_RTC_Init();
   MX_TIM2_Init();
-  MX_TIM21_Init();
+  //MX_TIM21_Init();
   /* USER CODE BEGIN 2 */
 
   APP_Init();

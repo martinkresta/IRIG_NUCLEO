@@ -13,6 +13,21 @@ uint16_t mDistance;
 
 void SONAR_Init(void)
 {
+  GPIO_InitTypeDef GPIO_InitStruct = {0};
+  __HAL_RCC_TIM2_CLK_ENABLE();
+  __HAL_RCC_TIM21_CLK_ENABLE();
+
+  __HAL_RCC_GPIOA_CLK_ENABLE();
+   /**TIM21 GPIO Configuration
+   PA10     ------> TIM21_CH1
+   */
+   GPIO_InitStruct.Pin = SONO_TRIG_Pin;
+   GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+   GPIO_InitStruct.Pull = GPIO_NOPULL;
+   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+   GPIO_InitStruct.Alternate = GPIO_AF0_TIM21;
+   HAL_GPIO_Init(SONO_TRIG_GPIO_Port, &GPIO_InitStruct);
+
   htim2.Instance->CR1 &= ~TIM_CR1_CEN;
   htim2.Instance->CCMR1 &= ~TIM_CCMR1_CC2S;
   htim2.Instance->CCMR1 |= TIM_ICSELECTION_DIRECTTI << TIM_CCMR1_CC2S_Pos;
@@ -35,11 +50,10 @@ uint16_t SONAR_Measure(void)
   htim2.Instance->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E;
   htim2.Instance->CR1 |= TIM_CR1_CEN;
 
-
+// generate pulse
   TIM21->CCER |= TIM_CCER_CC1E; /* (5) */
   TIM21->CR1 |= TIM_CR1_OPM | TIM_CR1_ARPE; /* (6) */
-
-  htim21.Instance->CR1 |= TIM_CR1_CEN;
+  TIM21->CR1 |= TIM_CR1_CEN;
 
 
   HAL_Delay(1);
