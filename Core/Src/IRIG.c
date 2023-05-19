@@ -10,15 +10,20 @@
 #include "di.h"
 #include "RTC.h"
 #include "UI.h"
+#include "SONAR.h"
 
 
 sOutputControl mPumpACtrl;
 sOutputControl mPumpBCtrl;
 sOutputControl mIrigValveCtrl;
 
+
+sIrigStatus mState;
+
 bool mAutoIrrigation;
 bool mFlushTank;
-
+bool mTankFull;
+bool mWellEmpty;
 // irigation settings
 
 uint16_t mIrigTime_s;
@@ -26,6 +31,14 @@ uint16_t mIrigHour1;
 uint16_t mIrigHour2;
 
 uint16_t mIrigDuration_s;
+
+//uint16_t mPumpADailyOnTime_s;
+//uint16_t mDailyIrrigLiters_l;
+
+uint16_t mIrigStartLiters;
+uint16_t mIrigStopLiters;
+
+//uint16_t mTankLevel_l;    // litres available in tank
 
 
 
@@ -69,41 +82,23 @@ void IRIG_Init(void)
 }
 
 
+void IRIG_Midnight(void)
+{
+  mState.dailyIrrigLiters_l = 0;
+  mState.pumpADailyOnTime_s = 0;
+}
+
 void IRIG_Update_1s(void)
 {
-  bool tankFull;
-  bool tankEmpty;
-  bool wellAEmpty;
-
   sDateTime now = RTC_GetTime();
+
+  mState.tankLevel_l = ((860 - (SONAR_GetDistance_mm())) * 3) / 10;
 
   // read the level bi-state sensors
 
-  tankFull = DI_Get(IN1_LEVEL1_TANKFULL); // water level above sensor
-  tankEmpty = !DI_Get(IN2_LEVEL2_TANKEMPTY);  // water level below sensor
-  wellAEmpty = !DI_Get(IN3_LEVEL3_WELLAEMPTY);  // water level below sensor
-
-  if(!mFlushTank)
-  {
-    // automatic refilling of irrigation tank from well (gray water savage)
-    if(!tankFull && !wellAEmpty)
-    {
-      // limit the pump start to every quarter past, to spread power supply load in time.
-      // (The other savage pump is running always from XX:00 to XX:07)
-      if(now.Minute == 15)
-      {
-        StartOuptut(&mPumpACtrl);
-        UI_LED_R_SetMode(eUI_BLINKING_FAST);
-      }
-
-    }
-    else
-    {
-      StopOuptut(&mPumpACtrl);
-      UI_LED_R_SetMode(eUI_OFF);
-    }
-  }
-
+  mTankFull = DI_Get(IN1_LEVEL1_TANKFULL); // water level above sensor
+ // tankEmpty = !DI_Get(IN2_LEVEL2_TANKEMPTY);  // water level below sensor
+  mWellEmpty = !DI_Get(IN3_LEVEL3_WELLAEMPTY);  // water level below sensor
 
 
   // automatic irrigation
@@ -115,12 +110,35 @@ void IRIG_Update_1s(void)
         if(now.Minute == 00 && now.Second == 0)
         {
           mIrigDuration_s = mIrigTime_s;
+          mIrigStartLiters = mState.tankLevel_l;
           StartOuptut(&mIrigValveCtrl);
-          UI_LED_G_SetMode(eUI_ON);
         }
       }
   }
 
+
+  // automatic refilling of irrigation tank from well (gray water savage)
+  if(!mFlushTank)   // disable refilling if user wants to flush the tank
+  {
+    if(!(mAutoIrrigation == true && mIrigValveCtrl.state == true))
+    {
+      if(!mTankFull && !mWellEmpty)
+      {
+        // limit the pump start to every quarter past, to spread power supply load in time.
+        // (The other savage pump is running always from XX:00 to XX:07)
+        //if(now.Minute == 15)
+        //{
+        //  StartOuptut(&mPumpACtrl);
+        //}
+        StartOuptut(&mPumpACtrl);
+      }
+    }
+  }
+  // stopping the refilling pump
+  if(mTankFull || mWellEmpty)
+  {
+    StopOuptut(&mPumpACtrl);
+  }
 
 
   if(!mFlushTank)
@@ -129,7 +147,7 @@ void IRIG_Update_1s(void)
      if(mIrigValveCtrl.state == true && (mIrigValveCtrl.stateTimer > mIrigDuration_s))
      {
        StopOuptut(&mIrigValveCtrl);
-       UI_LED_G_SetMode(eUI_FLASH);
+       mState.dailyIrrigLiters_l += mIrigStartLiters - mState.tankLevel_l;
      }
 
      // apply output time limitations
@@ -139,18 +157,24 @@ void IRIG_Update_1s(void)
      if(mIrigValveCtrl.stateTimer < 60000) mIrigValveCtrl.stateTimer++;
 
      // check max ON time of all inputs
-     if(mPumpACtrl.state == true && (mPumpACtrl.stateTimer > mPumpACtrl.maxOnTime))
-     {
-       StopOuptut(&mPumpACtrl);
-       UI_LED_R_SetMode(eUI_OFF);
-     }
+     if(mPumpACtrl.state == true && (mPumpACtrl.stateTimer > mPumpACtrl.maxOnTime)) StopOuptut(&mPumpACtrl);
      if(mPumpBCtrl.state == true && (mPumpBCtrl.stateTimer > mPumpBCtrl.maxOnTime)) StopOuptut(&mPumpBCtrl);
-     if(mIrigValveCtrl.state == true && (mIrigValveCtrl.stateTimer > mIrigValveCtrl.maxOnTime))
-     {
-       UI_LED_G_SetMode(eUI_FLASH);
-       StopOuptut(&mIrigValveCtrl);
-     }
+     if(mIrigValveCtrl.state == true && (mIrigValveCtrl.stateTimer > mIrigValveCtrl.maxOnTime))  StopOuptut(&mIrigValveCtrl);
   }
+
+  //------------------------
+  // UI update
+  // update Green LED - Irrigation state
+  if(mIrigValveCtrl.state == true)  UI_LED_G_SetMode(eUI_ON);
+  else                              UI_LED_G_SetMode(eUI_FLASH);
+  // update RED LED - Pump
+  if(mPumpACtrl.state == true)
+  {
+    UI_LED_R_SetMode(eUI_ON);
+    mState.pumpADailyOnTime_s ++;   // increment pump On Timer
+  }
+  else if(!mTankFull && mWellEmpty) UI_LED_R_SetMode(eUI_BLINKING_FAST);
+  else                                UI_LED_R_SetMode(eUI_OFF);
 
 }
 
@@ -173,7 +197,6 @@ void IRIG_IrrigateNow(uint16_t duration)
   mAutoIrrigation = false;
   mIrigDuration_s = duration * 60;
   StartOuptut(&mIrigValveCtrl);
-  UI_LED_G_SetMode(eUI_ON);
 }
 
 void IRIG_ToggleIrrigiation(void)
@@ -182,11 +205,9 @@ void IRIG_ToggleIrrigiation(void)
   {
     mIrigDuration_s = 60 * 180;   // max 3 hours
     StartOuptut(&mIrigValveCtrl);
-    UI_LED_G_SetMode(eUI_ON);
   }
   else
   {
-    UI_LED_G_SetMode(eUI_FLASH);
     StopOuptut(&mIrigValveCtrl);
   }
 }
@@ -208,6 +229,7 @@ void IRIG_FillTank(void)
 
 void StartOuptut(sOutputControl* out)
 {
+  if(out->state == true) return;
   if((out->stateTimer > out->minOffTime) && out->state == false)
   {
     HAL_GPIO_WritePin(out->port,out->pin, GPIO_PIN_RESET);
@@ -218,6 +240,7 @@ void StartOuptut(sOutputControl* out)
 
 void StopOuptut(sOutputControl* out)
 {
+  if(out->state == false) return;
   if((out->stateTimer > out->minOnTime) && out->state == true)
   {
     HAL_GPIO_WritePin(out->port,out->pin, GPIO_PIN_SET);

@@ -23,9 +23,27 @@ typedef struct
 }sOutputControl;
 
 
+typedef struct
+{
+  uint16_t tankLevel_l;
+  uint16_t pumpADailyOnTime_s;
+  uint16_t dailyIrrigLiters_l;
+  uint16_t statusFlags;
+}sIrigStatus;
+
+#define IRIG_STATFLAG_IRIGVALVE     0
+#define IRIG_STATFLAG_PUMP_A        1
+#define IRIG_STATFLAG_PUMP_B        2
+#define IRIG_STATFLAG_AUTOIRRIG     4
+#define IRIG_STATFLAG_FLUSHTANK     5
+#define IRIG_STATFLAG_TANKFULL      6
+#define IRIG_STATFLAG_WELLAEMPTY    7
+
 void IRIG_Init(void);
 
 void IRIG_Update_1s(void);
+
+void IRIG_Midnight(void);
 
 void IRIG_SetupAutoIrrig(uint16_t hour1, uint16_t hour2, uint16_t duration);
 
