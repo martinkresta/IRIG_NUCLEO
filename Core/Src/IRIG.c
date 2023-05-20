@@ -20,6 +20,8 @@ sOutputControl mIrigValveCtrl;
 
 sIrigStatus mState;
 
+sIrigConfig mConfig;
+
 bool mAutoIrrigation;
 bool mFlushTank;
 bool mTankFull;
@@ -76,6 +78,10 @@ void IRIG_Init(void)
   mIrigTime_s = 2*60*60;  // 2 hour
   mIrigHour1 = 7;       // morning 7:00
   mIrigHour2 = 19;      // evening 7:00  // hint: to disable one irrigation period, set the hour to more than 24 ;-)
+
+  mConfig.irigDuration_s = mIrigTime_s;
+  mConfig.irigHour1 = mIrigHour1;
+  mConfig.irigHour2 = mIrigHour2;
 
   mAutoIrrigation = true;
   mFlushTank = false;
@@ -184,7 +190,30 @@ void IRIG_SetupAutoIrrig(uint16_t hour1, uint16_t hour2, uint16_t duration)
   mIrigTime_s = 60*duration;
   mIrigHour1 = hour1;
   mIrigHour2 = hour2;
+
+  mConfig.irigDuration_s = mIrigTime_s;
+  mConfig.irigHour1 = mIrigHour1;
+  mConfig.irigHour2 = mIrigHour2;
 }
+
+sIrigStatus IRIG_GetStatus(void)
+{
+  mState.statusFlags = 0;
+  mState.statusFlags |= (mIrigValveCtrl.state ? 1 : 0) << IRIG_STATFLAG_IRIGVALVE;
+  mState.statusFlags |= (mPumpACtrl.state ? 1 : 0) << IRIG_STATFLAG_PUMP_A;
+  mState.statusFlags |= (mPumpBCtrl.state ? 1 : 0) << IRIG_STATFLAG_PUMP_B;
+  mState.statusFlags |= (mAutoIrrigation ? 1 : 0) << IRIG_STATFLAG_AUTOIRRIG;
+  mState.statusFlags |= (mFlushTank ? 1 : 0) << IRIG_STATFLAG_FLUSHTANK;
+  mState.statusFlags |= (mTankFull ? 1 : 0) << IRIG_STATFLAG_TANKFULL;
+  mState.statusFlags |= (mWellEmpty ? 1 : 0) << IRIG_STATFLAG_WELLAEMPTY;
+  return mState;
+}
+
+sIrigConfig IRIG_GetConfig(void)
+{
+  return mConfig;
+}
+
 
 void IRIG_SetAutoMode(void)
 {

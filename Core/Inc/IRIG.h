@@ -31,6 +31,13 @@ typedef struct
   uint16_t statusFlags;
 }sIrigStatus;
 
+typedef struct
+{
+  uint16_t irigDuration_s;
+  uint16_t irigHour1;
+  uint16_t irigHour2;
+}sIrigConfig;
+
 #define IRIG_STATFLAG_IRIGVALVE     0
 #define IRIG_STATFLAG_PUMP_A        1
 #define IRIG_STATFLAG_PUMP_B        2
@@ -52,6 +59,10 @@ void IRIG_SetAutoMode(void);
 void IRIG_IrrigateNow(uint16_t duration);
 
 void IRIG_ToggleIrrigiation(void);
+
+sIrigStatus IRIG_GetStatus(void);
+
+sIrigConfig IRIG_GetConfig(void);
 
 void IRIG_FlushTank(void);
 

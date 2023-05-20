@@ -40,12 +40,12 @@ sTimer		Timer_1s;
 *************************/
 static void Timer_Increment (sTimer *timer);
 static void Timer_Task_1ms(void);
-static void Timer_Task_5ms(void);
+//static void Timer_Task_5ms(void);
 static void Timer_Task_10ms(void);
-static void Timer_Task_50ms(void);
-static void Timer_Task_100ms(void);
-static void Timer_Task_250ms(void);
-static void Timer_Task_500ms(void);
+//static void Timer_Task_50ms(void);
+//static void Timer_Task_100ms(void);
+//static void Timer_Task_250ms(void);
+//static void Timer_Task_500ms(void);
 static void Timer_Task_1s(void);
 
 //static void Timer_Check_Flag(void);

@@ -35,6 +35,7 @@ void APP_Start(void);
 void APP_ProcessMessages(void);
 void APP_Update_1s(void);
 
+uint32_t APP_GetUpTime(void);
 void APP_DiInputChanged(uint8_t inputId, eDI state);
 void APP_GestureDetected(uint8_t action);
 

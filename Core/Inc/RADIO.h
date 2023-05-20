@@ -16,15 +16,26 @@
 
 #define COM_BUFLEN  10
 
+// To IRIG
+#define  RCMD_IRIG_AUTO            0x0501
+#define  RCMD_IRIG_NOW             0x0502
+#define  RCMD_IRIG_SET_CONFIG      0x0503
 
-#define  RCMD_IRIG_AUTO            0x501
-#define  RCMD_IRIG_NOW             0x502
-#define  RCMD_IRIG_SETUP           0x503
-#define  RCMD_IRIG_READ_STATUS     0x504
+#define  RCMD_IRIG_GET_STATUS      0x0504
+#define  RCMD_IRIG_GET_CONFIG      0x0505
+#define  RCMD_GET_RTC              0x0506
+#define  RCMD_GET_UPTIME           0x0507
+#define  RDMD_GET_SONAR_DIST       0x0508
 
-#define  RCMD_IRIG_STATUS          0x604
+#define  RCMD_SET_RTC              0x0510
 
-#define  RCMD_RTC_SYNC             0x510
+// FROM IRIG
+#define  RCMD_IRIG_STATUS          0x0604
+#define  RCMD_IRIG_CONFIG          0x0605
+#define  RCMD_RTC_INFO             0x0606
+#define  RCMD_UPTIME               0x0607
+#define  RCMD_SONAR_DIST           0x0608
+
 
 
 

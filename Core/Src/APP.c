@@ -20,6 +20,7 @@
 
 
 
+uint32_t mUpTime_s;
 
 // public methods
 void APP_Init(void)
@@ -28,6 +29,7 @@ void APP_Init(void)
 	sUIHwInit uihw;
 	uint8_t gi = 0;   //gesture index
 	sGestInit gestInit;
+	mUpTime_s = 0;
 
 	Scheduler_Init();
 
@@ -118,10 +120,17 @@ void APP_Update_1s(void)
 		dayNumber = newDayNumber;
 
 		// Reset counters
+		IRIG_Midnight();
 
 	}
+	mUpTime_s++;
 }
 
+
+uint32_t APP_GetUpTime(void)
+{
+  return mUpTime_s;
+}
 
 
 // map the digital input to the button ID and propagate the information

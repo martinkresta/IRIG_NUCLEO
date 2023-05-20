@@ -21,6 +21,7 @@
 #include "IRIG.h"
 #include "RTC.h"
 #include "SONAR.h"
+#include "string.h"
 
 
 
@@ -39,6 +40,10 @@ uint16_t mNsSendTimer;  // timer for sending network status
 static uint8_t Send(void);
 static void ProcessMessage(void);
 static void SendIrrigStatus(void);
+static void SendIrrigConfig(void);
+static void SendRTC(void);
+static void SendUptime(void);
+static void SendSonarDist(void);
 
 void RADIO_Init(UART_HandleTypeDef* uart)
 {
@@ -87,39 +92,64 @@ static uint8_t Send(void)
 }
 
 
-/*
-static void SendVariable(uint16_t id)
-{
-  uint16_t invalid = 0;
-  uint16_t validflag = 0;
-  int16_t tmp = VAR_GetVariable(id, &invalid);
-  validflag = (invalid == INVALID_FLAG ? 0 : 1);
-  mTxBuffer[0] = CMD_TM_VAR_VALUE >> 8;
-  mTxBuffer[1] = CMD_TM_VAR_VALUE & 0xFF;
-  mTxBuffer[2] = id >> 8;
-  mTxBuffer[3] = id  & 0xFF;
-  mTxBuffer[4] = tmp >> 8;
-  mTxBuffer[5] = tmp & 0xFF;
-  mTxBuffer[6] = validflag >> 8;
-  mTxBuffer[7] = validflag & 0xFF;
-  Send();
-}*/
-
 static void SendIrrigStatus(void)
 {
-  uint16_t invalid = 0;
-  uint16_t validflag = 0;
+  sIrigStatus status = IRIG_GetStatus();
   uint16_t tmp = SONAR_GetDistance_mm();
-  validflag = (invalid == INVALID_FLAG ? 0 : 1);
+  memset(mTxBuffer, 0, 10);
   mTxBuffer[0] = RCMD_IRIG_STATUS >> 8;
   mTxBuffer[1] = RCMD_IRIG_STATUS & 0xFF;
-  mTxBuffer[2] = tmp >> 8;
-  mTxBuffer[3] = tmp  & 0xFF;
-  mTxBuffer[4] = 0;
-  mTxBuffer[5] = 0;
-  mTxBuffer[6] = validflag >> 8;
-  mTxBuffer[7] = validflag & 0xFF;
+  memcpy(&(mTxBuffer[2]), &status, 8);
   Send();
+}
+
+static void SendIrrigConfig(void)
+{
+  sIrigConfig cfg = IRIG_GetConfig();
+  memset(mTxBuffer, 0, 10);
+  mTxBuffer[0] = RCMD_IRIG_CONFIG >> 8;
+  mTxBuffer[1] = RCMD_IRIG_CONFIG & 0xFF;
+  memcpy(&(mTxBuffer[2]), &cfg, 6);
+  Send();
+}
+
+static void SendRTC(void)
+{
+  sDateTime now = RTC_GetTime();
+  memset(mTxBuffer, 0, 10);
+  mTxBuffer[0] = RCMD_RTC_INFO >> 8;
+  mTxBuffer[1] = RCMD_RTC_INFO & 0xFF;
+
+  mTxBuffer[2] = now.Hour;
+  mTxBuffer[3] = now.Minute;
+  mTxBuffer[4] = now.Second;
+  mTxBuffer[5] = now.Day;
+  mTxBuffer[6] = now.Month;
+  mTxBuffer[7] = now.Year - 2000;
+  Send();
+}
+
+static void SendUptime(void)
+{
+  uint32_t uptime = APP_GetUpTime();
+  memset(mTxBuffer, 0, 10);
+  mTxBuffer[0] = RCMD_UPTIME >> 8;
+  mTxBuffer[1] = RCMD_UPTIME & 0xFF;
+  memcpy(&(mTxBuffer[2]), &uptime, 4);
+  Send();
+
+
+}
+
+static void SendSonarDist(void)
+{
+   uint16_t dist = SONAR_GetDistance_mm();
+   memset(mTxBuffer, 0, 10);
+   mTxBuffer[0] = RCMD_SONAR_DIST >> 8;
+   mTxBuffer[1] = RCMD_SONAR_DIST & 0xFF;
+   memcpy(&(mTxBuffer[2]), &dist, 2);
+
+   Send();
 }
 
 static void ProcessMessage(void)
@@ -141,14 +171,26 @@ static void ProcessMessage(void)
       case RCMD_IRIG_NOW:
         IRIG_IrrigateNow(data1);
         break;
-      case RCMD_IRIG_SETUP:
+      case RCMD_IRIG_SET_CONFIG:
         IRIG_SetupAutoIrrig(data1, data2, data3);
         break;
-      case RCMD_IRIG_READ_STATUS:
+      case RCMD_IRIG_GET_STATUS:
         SendIrrigStatus();
         break;
-      case RCMD_RTC_SYNC:
+      case RCMD_IRIG_GET_CONFIG:
+        SendIrrigConfig();
+        break;
+      case RCMD_GET_RTC:
+        SendRTC();
+        break;
+      case RCMD_GET_UPTIME:
+        SendUptime();
+        break;
+      case RDMD_GET_SONAR_DIST:
+        SendSonarDist();
+        break;
 
+      case RCMD_SET_RTC:
         now.Hour = mRxBuffer[2];
         now.Minute = mRxBuffer[3];
         now.Second = mRxBuffer[4];
@@ -156,7 +198,6 @@ static void ProcessMessage(void)
         now.Month = mRxBuffer[6];
         now.Year = 2000 + mRxBuffer[7];
         RTC_SetTime(now);
-
        // RTC_SetUnixTime(unixtime);   // this fcn is too big and does not fit to flash :-(
         break;
     }
