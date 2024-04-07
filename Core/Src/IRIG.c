@@ -99,6 +99,7 @@ void IRIG_Update_1s(void)
   sDateTime now = RTC_GetTime();
 
   mState.tankLevel_l = ((860 - (SONAR_GetDistance_mm())) * 3) / 10;
+  // real distance to bottom is rather 760mm
 
   // read the level bi-state sensors
 

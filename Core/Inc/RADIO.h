@@ -25,7 +25,8 @@
 #define  RCMD_IRIG_GET_CONFIG      0x0505
 #define  RCMD_GET_RTC              0x0506
 #define  RCMD_GET_UPTIME           0x0507
-#define  RDMD_GET_SONAR_DIST       0x0508
+#define  RCMD_GET_SONAR_DIST       0x0508
+#define  RCMD_SW_RESET             0x0509
 
 #define  RCMD_SET_RTC              0x0510
 

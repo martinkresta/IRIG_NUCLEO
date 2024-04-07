@@ -22,6 +22,7 @@
 #include "RTC.h"
 #include "SONAR.h"
 #include "string.h"
+#include "APP.h"
 
 
 
@@ -95,7 +96,7 @@ static uint8_t Send(void)
 static void SendIrrigStatus(void)
 {
   sIrigStatus status = IRIG_GetStatus();
-  uint16_t tmp = SONAR_GetDistance_mm();
+ // uint16_t tmp = SONAR_GetDistance_mm();
   memset(mTxBuffer, 0, 10);
   mTxBuffer[0] = RCMD_IRIG_STATUS >> 8;
   mTxBuffer[1] = RCMD_IRIG_STATUS & 0xFF;
@@ -157,11 +158,11 @@ static void ProcessMessage(void)
     sDateTime now;
     uint16_t id = (mRxBuffer[0]<<8) | mRxBuffer[1];
 
-    uint16_t data1, data2, data3, data4;
+    uint16_t data1, data2, data3;// data4;
     data1 = (mRxBuffer[2]<<8) | mRxBuffer[3];
     data2 = (mRxBuffer[4]<<8) | mRxBuffer[5];
     data3 = (mRxBuffer[6]<<8) | mRxBuffer[7];
-    data4 = (mRxBuffer[8]<<8) | mRxBuffer[9];
+  //  data4 = (mRxBuffer[8]<<8) | mRxBuffer[9];
 
     switch (id )  // message ID
     {
@@ -186,8 +187,11 @@ static void ProcessMessage(void)
       case RCMD_GET_UPTIME:
         SendUptime();
         break;
-      case RDMD_GET_SONAR_DIST:
+      case RCMD_GET_SONAR_DIST:
         SendSonarDist();
+        break;
+      case RCMD_SW_RESET:
+        NVIC_SystemReset();
         break;
 
       case RCMD_SET_RTC:
